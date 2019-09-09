@@ -1,7 +1,7 @@
 { stdenv, stdenvNoCC, lib, target-os, callPackage,
   mkFilter, bash, file, gnumake, watchman, gradle,
   androidEnvShellHook, mavenAndNpmDeps,
-  nodejs, openjdk, jsbundle, status-go, zlib }:
+  nodejs, openjdk, jsbundle, status-go, unzip, zlib }:
 
 { build-number,
   build-type, # Build type (e.g. nightly, release, e2e). Default is to use .env.nightly file
@@ -44,9 +44,9 @@ in stdenv.mkDerivation {
           root = path;
         };
     };
-  nativeBuildInputs = [ bash gradle ] ++ lib.optionals stdenv.isDarwin [ file gnumake watchman ];
+  nativeBuildInputs = [ bash gradle ] ++ lib.optionals stdenv.isDarwin [ file gnumake watchman unzip ];
   buildInputs = [ nodejs openjdk ];
-  phases = [ "unpackPhase" "patchPhase" "buildPhase" "installPhase" ];
+  phases = [ "unpackPhase" "patchPhase" "buildPhase" "checkPhase" "installPhase" ];
   unpackPhase = ''
     runHook preUnpack
 
@@ -116,6 +116,10 @@ in stdenv.mkDerivation {
     popd > /dev/null
 
     ${unsetEnvVars}
+  '';
+  doCheck = true;
+  checkPhase = ''
+    unzip -l ${generatedApkPath} | grep 'assets/index.android.bundle'
   '';
   installPhase = ''
     mkdir -p $out

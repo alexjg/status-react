@@ -47,7 +47,7 @@ let
                 root = path;
               };
           };
-        phases = [ "unpackPhase" "patchPhase" "installPhase" "fixupPhase" "checkPhase" ];
+        phases = [ "unpackPhase" "patchPhase" "installPhase" "fixupPhase" ];
         nativeBuildInputs = [ projectNodePackage ];
         buildInputs = [ gradle nodejs bash file zlib mavenLocalRepo ];
         propagatedBuildInputs = [ react-native-deps ];
@@ -73,6 +73,7 @@ let
           mkdir -p ${projectBuildDir}/node_modules
           cp -a ${projectNodePackage}/node_modules/. ${projectBuildDir}/node_modules/
 
+          # Ensure that module was correctly installed
           [ -d ${projectBuildDir}/node_modules/jsc-android/dist ] || exit 1
 
           # Adjust permissions
@@ -186,10 +187,6 @@ let
               'packageReactNdkLibs(dependsOn: buildReactNdkLib, ' \
               'packageReactNdkLibs('
         '';
-        checkPhase = ''
-          [ -d $out/project/node_modules/jsc-android/dist ] || exit 1
-        '';
-        doCheck = true;
 
         # The ELF types are incompatible with the host platform, so let's not even try
         # TODO: Use Android NDK to strip binaries manually
